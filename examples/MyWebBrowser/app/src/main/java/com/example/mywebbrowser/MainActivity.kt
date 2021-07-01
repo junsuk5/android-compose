@@ -6,6 +6,7 @@ import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -151,5 +154,16 @@ fun HomeScreen(viewModel: MainViewModel, webView: @Composable () -> Unit) {
 @Composable
 fun DefaultPreview() {
     MyWebBrowserTheme {
+        HomeScreen(viewModel = MainViewModel()) {
+            // 웹사이트를 표시할 웹뷰
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(1.dp, Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("WebView")
+            }
+        }
     }
 }
