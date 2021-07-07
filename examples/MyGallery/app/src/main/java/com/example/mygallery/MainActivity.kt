@@ -13,31 +13,30 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import com.example.mygallery.ui.theme.MyGalleryTheme
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.calculateCurrentOffsetForPage
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.math.absoluteValue
+import com.google.accompanist.pager.calculateCurrentOffsetForPage
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -130,27 +129,62 @@ fun PermissionRequestScreen(onClick: () -> Unit) {
     }
 }
 
+private fun lerp(start: Float, stop: Float, fraction: Float): Float =
+    (1 - fraction) * start + fraction * stop
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HomeScreen(viewModel: MainViewModel) {
     // 관찰 가능한 데이터
     val photoUris = viewModel.photoUris.collectAsState()
     // Display 10 items
-    val pagerState = rememberPagerState(pageCount = photoUris.value.size)
+    val pagerState = rememberPagerState(
+        pageCount = photoUris.value.size,   // 총 사진의 수
+        initialOffscreenLimit = 3,  // 한번에 로딩할 사진의 수
+    )
 
     HorizontalPager(
         state = pagerState,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize()
     ) { page ->
-        // Our page content
-        Image(
-            painter = rememberCoilPainter(
-                request = photoUris.value[page]
-            ),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+        Card(
+            Modifier
+                .graphicsLayer {
+                    // Calculate the absolute offset for the current page from the
+                    // scroll position. We use the absolute value which allows us to mirror
+                    // any effects for both directions
+                    val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+
+                    // We animate the scaleX + scaleY, between 85% and 100%
+                    lerp(
+                        start = 0.85f,
+                        stop = 1f,
+                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                    ).also { scale ->
+                        scaleX = scale
+                        scaleY = scale
+                    }
+
+                    // We animate the alpha, between 50% and 100%
+                    alpha = lerp(
+                        start = 0.5f,
+                        stop = 1f,
+                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                    )
+                }
+        ) {
+            // Card content
+            Image(
+                painter = rememberCoilPainter(
+                    request = photoUris.value[page]
+                ),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }
 
