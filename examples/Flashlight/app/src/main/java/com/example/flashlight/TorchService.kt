@@ -33,7 +33,7 @@ class TorchService : Service() {
                 torch.flashOff()
                 _isRunning = false
             }
-            // 서비스에서 실행할 경우
+            // 위젯에서 실행할 경우
             else -> {
                 _isRunning = !_isRunning
                 if (_isRunning) {
