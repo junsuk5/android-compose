@@ -6,5 +6,5 @@ data class Todo(
     val uid: Int,
     val title: String,
     val date: Long = Calendar.getInstance().timeInMillis,
-    var isDone: Boolean = false,
+    val isDone: Boolean = false,
 )

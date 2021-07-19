@@ -64,9 +64,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun toggle(index: Int) {
         _items.value = _items.value.map {
             if (it.uid == index) {
-                it.isDone = !it.isDone
-            }
-            it
+                it.copy(isDone = !it.isDone)
+            } else it
         }
     }
 
