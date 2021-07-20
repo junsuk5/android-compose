@@ -2,33 +2,52 @@ package com.example.todolist.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.Todo
+import com.example.todolist.data.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    application: Application,
+    private val todoRepository: TodoRepository,
+) : AndroidViewModel(application) {
+
     private var _items = MutableStateFlow<List<Todo>>(emptyList())
     val items: StateFlow<List<Todo>> = _items
 
-    private var _count = AtomicInteger(0)
+    init {
+        viewModelScope.launch {
+            todoRepository.observeTodos()
+                .collect { todos ->
+                    _items.value = todos
+                }
+        }
+    }
 
     fun addTodo(text: String) {
-        _items.value = _items.value.toMutableList().apply {
-            add(Todo(_count.getAndIncrement(), text, Date().time))
+        viewModelScope.launch {
+            todoRepository.addTodo(text)
         }
     }
 
     fun toggle(index: Int) {
-        _items.value = _items.value.map {
-            if (it.uid == index) {
-                it.copy(isDone = !it.isDone)
-            } else it
+        val todo = _items.value.find { todo -> todo.uid == index }
+        todo?.let {
+            viewModelScope.launch {
+                todoRepository.updateTodo(it.copy(isDone = !it.isDone))
+            }
         }
     }
 
     fun delete(index: Int) {
-        _items.value = _items.value.filter { it.uid != index }
+        val todo = _items.value.find { todo -> todo.uid == index }
+        todo?.let {
+            viewModelScope.launch {
+                todoRepository.deleteTodo(it)
+            }
+        }
     }
 }
