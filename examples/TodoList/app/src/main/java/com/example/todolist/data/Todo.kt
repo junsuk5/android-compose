@@ -6,8 +6,10 @@ import java.util.*
 
 @Entity
 data class Todo(
-    @PrimaryKey(autoGenerate = true) val uid: Int,
     val title: String,
     val date: Long = Calendar.getInstance().timeInMillis,
     val isDone: Boolean = false,
-)
+) {
+    @PrimaryKey(autoGenerate = true)
+    var uid: Int = 0
+}

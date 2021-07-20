@@ -4,12 +4,12 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.todolist.data.TodoRepository
-import com.example.todolist.data.memory.MemoryTodoRepository
+import com.example.todolist.data.room.RoomTodoRepository
 import com.example.todolist.ui.MainViewModel
 
 class TodoAndroidViewModelFactory(
     private val application: Application,
-    private val repository: TodoRepository = MemoryTodoRepository()
+    private val repository: TodoRepository = RoomTodoRepository(application)
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {

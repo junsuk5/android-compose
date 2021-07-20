@@ -37,7 +37,9 @@ class MainViewModel(
         val todo = _items.value.find { todo -> todo.uid == index }
         todo?.let {
             viewModelScope.launch {
-                todoRepository.updateTodo(it.copy(isDone = !it.isDone))
+                todoRepository.updateTodo(it.copy(isDone = !it.isDone).apply {
+                    uid = it.uid
+                })
             }
         }
     }

@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TodoDao {
     @Query("SELECT * FROM todo ORDER BY date DESC")
-    fun todos(): Flow<Todo>
+    fun todos(): Flow<List<Todo>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: Todo)
 
     @Update

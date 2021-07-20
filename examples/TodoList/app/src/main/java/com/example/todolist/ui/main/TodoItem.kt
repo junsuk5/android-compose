@@ -78,11 +78,11 @@ fun TodoItem(
 @Preview(showBackground = true)
 @Composable
 fun TodoItemTruePreview() {
-    TodoItem(todo = Todo(0, "숙제", Date().time, true))
+    TodoItem(todo = Todo("숙제", Date().time, true))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TodoItemFalsePreview() {
-    TodoItem(todo = Todo(0, "숙제", Date().time, false))
+    TodoItem(todo = Todo("숙제", Date().time, false))
 }

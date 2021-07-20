@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.example.todolist.R
 import com.example.todolist.data.Todo
 import com.example.todolist.ui.theme.TodoListTheme
-import java.util.*
 
 @Composable
 fun HomeScreen(
@@ -107,9 +106,9 @@ fun HomeScreen(
 @Composable
 fun DefaultPreview() {
     val items = listOf(
-        Todo(0, "청소", Date().time, true),
-        Todo(1, "빨래", Date().time, false),
-        Todo(2, "숙제", Date().time, true),
+        Todo("청소", isDone = true),
+        Todo("빨래", isDone = false),
+        Todo("숙제", isDone = true),
     )
 
     TodoListTheme {
