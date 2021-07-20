@@ -15,7 +15,7 @@ class MainViewModel(
     private val todoRepository: TodoRepository,
 ) : AndroidViewModel(application) {
 
-    private var _items = MutableStateFlow<List<Todo>>(emptyList())
+    private val _items = MutableStateFlow<List<Todo>>(emptyList())
     val items: StateFlow<List<Todo>> = _items
 
     init {
