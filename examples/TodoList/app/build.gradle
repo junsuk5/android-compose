@@ -58,5 +58,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 
+    // 컴포즈 내에서 사용할 viewModel()
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
 }

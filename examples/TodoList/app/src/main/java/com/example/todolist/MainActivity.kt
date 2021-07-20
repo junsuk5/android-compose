@@ -39,10 +39,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val mainViewModel: MainViewModel = viewModel()
+            val todoItems by mainViewModel.items.collectAsState()
+
             TodoListTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MainScreen()
+                    MainScreen(
+                        todoItems = todoItems,
+                        onAddTodo = mainViewModel::addTodo,
+                        onToggle = mainViewModel::toggle,
+                        onDelete = mainViewModel::delete,
+                    )
                 }
             }
         }
@@ -75,22 +83,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 }
 
 @Composable
-fun MainScreen() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("오늘 할 일") }
-            )
-        },
-    ) {
-        Body()
-    }
-
-
-}
-
-@Composable
-fun Body(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(
+    todoItems: List<Todo>,
+    onAddTodo: (text: String) -> Unit = {},
+    onToggle: (index: Int) -> Unit = {},
+    onDelete: (index: Int) -> Unit = {},
+) {
     val focusManager = LocalFocusManager.current
 
     // 다음을 임포트하면 델리게이티드 프로퍼티(by)를 사용할 수 있음
@@ -98,60 +96,70 @@ fun Body(viewModel: MainViewModel = viewModel()) {
     // import androidx.compose.runtime.setValue
     // getter 와 setter 를 미리 재정의 해 둔 것
     var text by rememberSaveable { mutableStateOf("") }
-    val todoItems by viewModel.items.collectAsState()
 
-    Column(Modifier.fillMaxSize()) {
-        Row(Modifier.padding(8.dp)) {
-            OutlinedTextField(
-                value = text,
-                onValueChange = {
-                    text = it
-                },
-                modifier = Modifier.weight(weight = 1f),    // 남은 영역 꽉 채우기
-                shape = RoundedCornerShape(8.dp),   // 둥글게 모양 내기
-                maxLines = 1,   // 한 줄 이상 늘어나지 않도록
-                placeholder = { Text("할 일") },
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_baseline_add_24),
-                        contentDescription = null,
-                    )
-                },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),  // 키보드 옵션
-                keyboardActions = KeyboardActions(onDone = {
-                    viewModel.addTodo(text)
-                    text = ""
-                    focusManager.clearFocus()   // 키보드 숨기기
-                }),
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("오늘 할 일") }
             )
-        }
-
-        Divider()
-
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),   // 상하 좌우 패딩
-            verticalArrangement = Arrangement.spacedBy(16.dp),  // 아이템간의 패딩
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            items(todoItems) { todoItem ->
-                Column {
-                    TodoItem(
-                        todo = todoItem,
-                        onClick = { index ->
-                            viewModel.toggle(index)
-                        },
-                        onDeleteClick = { index ->
-                            viewModel.delete(index)
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Divider(color = Color.Black, thickness = 1.dp)
+            Row(Modifier.padding(8.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = {
+                        text = it
+                    },
+                    modifier = Modifier.weight(weight = 1f),    // 남은 영역 꽉 채우기
+                    shape = RoundedCornerShape(8.dp),   // 둥글게 모양 내기
+                    maxLines = 1,   // 한 줄 이상 늘어나지 않도록
+                    placeholder = { Text("할 일") },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                            contentDescription = null,
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),  // 키보드 옵션
+                    keyboardActions = KeyboardActions(onDone = {
+                        onAddTodo(text)
+                        text = ""
+                        focusManager.clearFocus()   // 키보드 숨기기
+                    }),
+                )
+            }
+
+            Divider()
+
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),   // 상하 좌우 패딩
+                verticalArrangement = Arrangement.spacedBy(16.dp),  // 아이템간의 패딩
+            ) {
+                items(todoItems) { todoItem ->
+                    Column {
+                        TodoItem(
+                            todo = todoItem,
+                            onClick = { index ->
+                                onToggle(index)
+                            },
+                            onDeleteClick = { index ->
+                                onDelete(index)
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider(color = Color.Black, thickness = 1.dp)
+                    }
                 }
             }
-        }
 
+        }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
@@ -223,7 +231,13 @@ fun TodoItem(
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
+    val items = listOf(
+        Todo(0, "청소", Date().time, true),
+        Todo(1, "빨래", Date().time, false),
+        Todo(2, "숙제", Date().time, true),
+    )
+
     TodoListTheme {
-        MainScreen()
+        MainScreen(items)
     }
 }
