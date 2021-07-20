@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -60,4 +61,13 @@ dependencies {
 
     // 컴포즈 내에서 사용할 viewModel()
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
+
+    // Room
+    def room_version = "2.3.0"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
 }

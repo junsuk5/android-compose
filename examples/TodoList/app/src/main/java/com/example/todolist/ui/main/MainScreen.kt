@@ -20,7 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todolist.R
-import com.example.todolist.model.Todo
+import com.example.todolist.data.Todo
 import com.example.todolist.ui.theme.TodoListTheme
 import java.util.*
 

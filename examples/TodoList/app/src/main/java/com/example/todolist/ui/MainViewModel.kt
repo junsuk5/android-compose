@@ -2,7 +2,7 @@ package com.example.todolist.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.example.todolist.model.Todo
+import com.example.todolist.data.Todo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
