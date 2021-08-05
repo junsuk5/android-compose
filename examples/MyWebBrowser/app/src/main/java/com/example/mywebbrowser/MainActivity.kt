@@ -26,11 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
 import com.example.mywebbrowser.ui.theme.MyWebBrowserTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.util.*
+
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -38,13 +35,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // url을 관찰
+            val url = viewModel.url.collectAsState()
+
             MyWebBrowserTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    // url을 관찰
-                    val url = viewModel.url.collectAsState()
 
-                    HomeScreen(viewModel) {
+                    HomeScreen(
+                        undo = { viewModel.undo() },
+                        redo = { viewModel.redo() },
+                        onUrlChange = { viewModel.onUrlChange(it) }
+                    ) {
                         // 웹사이트를 표시할 웹뷰
                         AndroidView(
                             modifier = Modifier.fillMaxSize(),
@@ -67,36 +69,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class MainViewModel : ViewModel() {
-    private val _url = MutableStateFlow("https://www.google.com")
-    val url: StateFlow<String> = _url
-
-    // Undo, Redo를 위한 스택
-    private val _undoStack = Stack<String>()
-    private val _redoStack = Stack<String>()
-
-    fun onUrlChange(newUrl: String) {
-        _undoStack.push(_url.value)
-        _url.value = newUrl
-    }
-
-    fun undo() {
-        if (_undoStack.isNotEmpty()) {
-            _redoStack.push(_url.value)
-            _url.value = _undoStack.pop()
-        }
-    }
-
-    fun redo() {
-        if (_redoStack.isNotEmpty()) {
-            _undoStack.push(_url.value)
-            _url.value = _redoStack.pop()
-        }
-    }
-}
-
 @Composable
-fun HomeScreen(viewModel: MainViewModel, webView: @Composable () -> Unit) {
+fun HomeScreen(
+    undo: () -> Unit = {},
+    redo: () -> Unit = {},
+    onUrlChange: (url: String) -> Unit = {},
+    webView: @Composable () -> Unit
+) {
     val focusManager = LocalFocusManager.current
 
     val (inputUrl, setUrl) = rememberSaveable { mutableStateOf("https://www.google.com") }
@@ -106,13 +85,13 @@ fun HomeScreen(viewModel: MainViewModel, webView: @Composable () -> Unit) {
             TopAppBar(
                 title = { Text(text = "나만의 웹 브라우저") },
                 actions = {
-                    IconButton(onClick = { viewModel.undo() }) {
+                    IconButton(onClick = { undo() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "back"
                         )
                     }
-                    IconButton(onClick = { viewModel.redo() }) {
+                    IconButton(onClick = { redo() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowForward,
                             contentDescription = "forward"
@@ -135,7 +114,7 @@ fun HomeScreen(viewModel: MainViewModel, webView: @Composable () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),    // 검색아이콘
                     keyboardActions = KeyboardActions(onSearch = {  // 검색 아이콘을 클릭했을 때
-                        viewModel.onUrlChange(inputUrl)
+                        onUrlChange(inputUrl)
                         focusManager.clearFocus()   // 키보드 숨기기
                     })
                 )
@@ -154,7 +133,7 @@ fun HomeScreen(viewModel: MainViewModel, webView: @Composable () -> Unit) {
 @Composable
 fun DefaultPreview() {
     MyWebBrowserTheme {
-        HomeScreen(viewModel = MainViewModel()) {
+        HomeScreen {
             // 웹사이트를 표시할 웹뷰
             Box(
                 modifier = Modifier

@@ -31,10 +31,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val sec = viewModel.sec.collectAsState()
+            val milli = viewModel.milli.collectAsState()
+            val isRunning = viewModel.isRunning.collectAsState()
+            val lapTimes = viewModel.lapTimes.collectAsState()
+
             StopWatchTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(viewModel)
+                    MainScreen(
+                        sec = sec.value,
+                        milli = milli.value,
+                        isRunning = isRunning.value,
+                        lapTimes = lapTimes.value,
+                        onReset = { viewModel.reset() },
+                        onToggle = { viewModel.toggle() },
+                        onLapTime = { viewModel.recordLapTime() },
+                    )
                 }
             }
         }
@@ -104,13 +117,12 @@ class MainViewModel : ViewModel() {
 }
 
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
-    val sec = viewModel.sec.collectAsState()
-    val milli = viewModel.milli.collectAsState()
-
-    val isRunning = viewModel.isRunning.collectAsState()
-
-    val lapTimes = viewModel.lapTimes.collectAsState()
+fun MainScreen(
+    sec: Int = 0, milli: Int = 0, isRunning: Boolean = false, lapTimes: List<String>,
+    onReset: () -> Unit = {},
+    onToggle: () -> Unit = {},
+    onLapTime: () -> Unit = {},
+) {
 
     Scaffold(
         topBar = {
@@ -130,8 +142,8 @@ fun MainScreen(viewModel: MainViewModel) {
             Row(
                 verticalAlignment = Alignment.Bottom,
             ) {
-                Text("${sec.value}", fontSize = 100.sp)
-                Text("${milli.value}")
+                Text("$sec", fontSize = 100.sp)
+                Text("$milli")
             }
 
             // 여백
@@ -143,7 +155,7 @@ fun MainScreen(viewModel: MainViewModel) {
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
-                lapTimes.value.forEach { lapTime ->
+                lapTimes.forEach { lapTime ->
                     Text(lapTime)
                 }
             }
@@ -158,7 +170,7 @@ fun MainScreen(viewModel: MainViewModel) {
             ) {
                 // 재시작 버튼
                 FloatingActionButton(
-                    onClick = { viewModel.reset() },
+                    onClick = { onReset() },
                     backgroundColor = Color.Red,
                 ) {
                     Image(
@@ -169,20 +181,20 @@ fun MainScreen(viewModel: MainViewModel) {
 
                 // 일시 정지 버튼
                 FloatingActionButton(
-                    onClick = { viewModel.toggle() },
+                    onClick = { onToggle() },
                     backgroundColor = Color.Green,
                 ) {
                     Image(
                         painter = painterResource(
                             id =
-                            if (isRunning.value) R.drawable.ic_baseline_pause_24
+                            if (isRunning) R.drawable.ic_baseline_pause_24
                             else R.drawable.ic_baseline_play_arrow_24
                         ),
                         contentDescription = null,
                     )
                 }
 
-                Button(onClick = { viewModel.recordLapTime() }) {
+                Button(onClick = { onLapTime() }) {
                     Text("랩 타임")
                 }
             }
@@ -194,6 +206,12 @@ fun MainScreen(viewModel: MainViewModel) {
 @Composable
 fun DefaultPreview() {
     StopWatchTheme {
-        MainScreen(MainViewModel())
+        MainScreen(
+            lapTimes = listOf(
+                "3 LAP: 2.55",
+                "2 LAP: 1.55",
+                "1 LAP: 0.55",
+            )
+        )
     }
 }

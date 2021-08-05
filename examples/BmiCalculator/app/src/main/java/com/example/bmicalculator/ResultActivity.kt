@@ -38,7 +38,11 @@ class ResultActivity : ComponentActivity() {
 }
 
 @Composable
-fun ResultScreen(text: String, resId: Int, onBackPressed: () -> Unit) {
+fun ResultScreen(
+    text: String,
+    resId: Int,
+    onBackPressed: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,4 +83,7 @@ fun DefaultPreview2() {
 
         }
     }
+    val (name, age) = Person("홍길동", 20)
 }
+
+data class Person(val name: String, val age: Int)
