@@ -118,7 +118,12 @@ class MainViewModel : ViewModel() {
 
 @Composable
 fun MainScreen(
-    sec: Int = 0, milli: Int = 0, isRunning: Boolean = false, lapTimes: List<String>,
+    sec: Int = 0, milli: Int = 0, isRunning: Boolean = false,
+    lapTimes: List<String> = listOf(
+        "3 LAP: 2.55",
+        "2 LAP: 1.55",
+        "1 LAP: 0.55",
+    ),
     onReset: () -> Unit = {},
     onToggle: () -> Unit = {},
     onLapTime: () -> Unit = {},
@@ -206,12 +211,6 @@ fun MainScreen(
 @Composable
 fun DefaultPreview() {
     StopWatchTheme {
-        MainScreen(
-            lapTimes = listOf(
-                "3 LAP: 2.55",
-                "2 LAP: 1.55",
-                "1 LAP: 0.55",
-            )
-        )
+        MainScreen()
     }
 }
