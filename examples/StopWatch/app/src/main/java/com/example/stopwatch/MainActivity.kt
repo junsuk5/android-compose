@@ -10,7 +10,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,8 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.stopwatch.ui.theme.StopWatchTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 import kotlin.concurrent.timer
 
@@ -31,19 +30,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val sec = viewModel.sec.collectAsState()
-            val milli = viewModel.milli.collectAsState()
-            val isRunning = viewModel.isRunning.collectAsState()
-            val lapTimes = viewModel.lapTimes.collectAsState()
+            val sec = viewModel.sec.value
+            val milli = viewModel.milli.value
+            val isRunning = viewModel.isRunning.value
+            val lapTimes = viewModel.lapTimes.value
 
             StopWatchTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     MainScreen(
-                        sec = sec.value,
-                        milli = milli.value,
-                        isRunning = isRunning.value,
-                        lapTimes = lapTimes.value,
+                        sec = sec,
+                        milli = milli,
+                        isRunning = isRunning,
+                        lapTimes = lapTimes,
                         onReset = { viewModel.reset() },
                         onToggle = { viewModel.toggle() },
                         onLapTime = { viewModel.recordLapTime() },
@@ -58,19 +57,19 @@ class MainViewModel : ViewModel() {
     private var time = 0
     private var timerTask: Timer? = null
 
-    private val _isRunning = MutableStateFlow(false)
-    val isRunning: StateFlow<Boolean> = _isRunning
+    private val _isRunning = mutableStateOf(false)
+    val isRunning: State<Boolean> = _isRunning
 
-    private val _sec = MutableStateFlow(0)
-    val sec: StateFlow<Int> = _sec
+    private val _sec = mutableStateOf(0)
+    val sec: State<Int> = _sec
 
-    private val _milli = MutableStateFlow(0)
-    val milli: StateFlow<Int> = _milli
+    private val _milli = mutableStateOf(0)
+    val milli: State<Int> = _milli
 
     private var lap = 1
 
-    private val _lapTimes = MutableStateFlow(mutableListOf<String>())
-    val lapTimes: StateFlow<List<String>> = _lapTimes
+    private val _lapTimes = mutableStateOf(mutableListOf<String>())
+    val lapTimes: State<List<String>> = _lapTimes
 
     fun toggle() {
         if (_isRunning.value) {
