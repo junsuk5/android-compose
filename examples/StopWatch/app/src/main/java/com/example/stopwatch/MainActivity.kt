@@ -3,7 +3,6 @@ package com.example.stopwatch
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,16 +19,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stopwatch.ui.theme.StopWatchTheme
 import java.util.*
 import kotlin.concurrent.timer
 
 class MainActivity : ComponentActivity() {
-    private val viewModel by viewModels<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val viewModel = viewModel<MainViewModel>()
+
             val sec = viewModel.sec.value
             val milli = viewModel.milli.value
             val isRunning = viewModel.isRunning.value
