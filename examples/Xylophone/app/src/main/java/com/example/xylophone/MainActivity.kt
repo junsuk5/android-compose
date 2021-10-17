@@ -9,8 +9,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import com.example.xylophone.ui.theme.XylophoneTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,11 +27,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            XylophoneTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(viewModel)
-                }
+            XylophoneScreen { index ->
+                viewModel.playSound(index)
             }
         }
     }
@@ -64,7 +58,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 }
 
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun XylophoneScreen(
+    onClick: (Int) -> Unit,
+) {
     val keys = listOf(
         Pair("도", Color.Red),
         Pair("레", Color(0xFFFF9800)),
@@ -86,7 +82,7 @@ fun MainScreen(viewModel: MainViewModel) {
                 modifier = Modifier
                     .padding(top = padding.dp, bottom = padding.dp)
                     .clickable {
-                        viewModel.playSound(index)
+                        onClick(index)
                     },
                 text = key.first,
                 color = key.second
