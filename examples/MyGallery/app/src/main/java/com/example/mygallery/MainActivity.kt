@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mygallery.ui.theme.MyGalleryTheme
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.pager.*
@@ -35,43 +36,39 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyGalleryTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    // 권한 여부를 저장
-                    val granted = remember { mutableStateOf(false) }
+            val viewModel = viewModel<MainViewModel>()
 
-                    // 권한요청을 위한 런처
-                    val launcher =
-                        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                            granted.value = isGranted
-                        }
+            // 권한 여부를 저장
+            val granted = remember { mutableStateOf(false) }
 
-                    // 권한이 있는지 체크
-                    if (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        granted.value = true
-                    }
+            // 권한요청을 위한 런처
+            val launcher =
+                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                    granted.value = isGranted
+                }
 
-                    // 권한이 있다면 사진을 가져오고 화면에 표시
-                    if (granted.value) {
-                        viewModel.fetchPhotos()
-                        HomeScreen(viewModel)
-                    } else {
-                        // 권한이 없다면 권한을 요청하는 화면을 표시
-                        PermissionRequestScreen {
-                            // 권한을 요청하는 코드
-                            launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        }
-                    }
+            // 권한이 있는지 체크
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                granted.value = true
+            }
+
+            // 권한이 있다면 사진을 가져오고 화면에 표시
+            if (granted.value) {
+                viewModel.fetchPhotos()
+                HomeScreen(viewModel)
+            } else {
+                // 권한이 없다면 권한을 요청하는 화면을 표시
+                PermissionRequestScreen {
+                    // 권한을 요청하는 코드
+                    launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                 }
             }
         }
