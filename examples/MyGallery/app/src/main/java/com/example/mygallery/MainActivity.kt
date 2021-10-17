@@ -11,12 +11,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,11 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberImagePainter
 import com.example.mygallery.ui.theme.MyGalleryTheme
-import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.pager.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
@@ -63,7 +65,7 @@ class MainActivity : ComponentActivity() {
             // 권한이 있다면 사진을 가져오고 화면에 표시
             if (granted.value) {
                 viewModel.fetchPhotos()
-                HomeScreen(viewModel)
+                HomeScreen(viewModel.photoUris.value)
             } else {
                 // 권한이 없다면 권한을 요청하는 화면을 표시
                 PermissionRequestScreen {
@@ -76,8 +78,8 @@ class MainActivity : ComponentActivity() {
 }
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val _photoUris = MutableStateFlow(emptyList<Uri>())
-    val photoUris: StateFlow<List<Uri>> = _photoUris
+    private val _photoUris = mutableStateOf(emptyList<Uri>())
+    val photoUris: State<List<Uri>> = _photoUris
 
     fun fetchPhotos() {
         val uris = mutableListOf<Uri>()
@@ -127,18 +129,13 @@ private fun lerp(start: Float, stop: Float, fraction: Float): Float =
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel) {
-    // 관찰 가능한 데이터
-    val photoUris = viewModel.photoUris.collectAsState()
-    // Display 10 items
-    val pagerState = rememberPagerState(
-        pageCount = photoUris.value.size,   // 총 사진의 수
-        initialOffscreenLimit = 3,  // 한번에 로딩할 사진의 수
-    )
+fun HomeScreen(photoUris: List<Uri>) {
+    val pagerState = rememberPagerState()
 
     Column(Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,
+            count = photoUris.size,
             modifier = Modifier
                 .weight(1f)     // Column 내에서의 비중: 1 = 남은 영역을 모두 차지
                 .padding(16.dp)
@@ -172,8 +169,8 @@ fun HomeScreen(viewModel: MainViewModel) {
             ) {
                 // Card content
                 Image(
-                    painter = rememberCoilPainter(
-                        request = photoUris.value[page]
+                    painter = rememberImagePainter(
+                        data = photoUris[page],
                     ),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
