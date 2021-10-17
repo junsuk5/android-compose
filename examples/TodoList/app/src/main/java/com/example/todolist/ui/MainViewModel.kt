@@ -1,12 +1,12 @@
 package com.example.todolist.ui
 
 import android.app.Application
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.Todo
 import com.example.todolist.data.TodoRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -15,8 +15,8 @@ class MainViewModel(
     private val todoRepository: TodoRepository,
 ) : AndroidViewModel(application) {
 
-    private val _items = MutableStateFlow<List<Todo>>(emptyList())
-    val items: StateFlow<List<Todo>> = _items
+    private val _items = mutableStateOf(emptyList<Todo>())
+    val items: State<List<Todo>> = _items
 
     init {
         viewModelScope.launch {
