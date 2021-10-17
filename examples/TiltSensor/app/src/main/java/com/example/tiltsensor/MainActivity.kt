@@ -18,17 +18,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.example.tiltsensor.ui.theme.TiltSensorTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
@@ -44,12 +45,10 @@ class MainActivity : ComponentActivity() {
         lifecycle.addObserver(viewModel)
 
         setContent {
-            TiltSensorTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    HomeScreen(viewModel)
-                }
-            }
+            TiltScreen(
+                x = viewModel.x.value,
+                y = viewModel.y.value,
+            )
         }
     }
 }
@@ -57,11 +56,11 @@ class MainActivity : ComponentActivity() {
 class MainViewModel(application: Application) : AndroidViewModel(application),
     SensorEventListener, LifecycleObserver {
 
-    private val _value0 = MutableStateFlow(0f)
-    val x: StateFlow<Float> = _value0
+    private val _value0 = mutableStateOf(0f)
+    val x: State<Float> = _value0
 
-    private val _value1 = MutableStateFlow(0f)
-    val y: StateFlow<Float> = _value1
+    private val _value1 = mutableStateOf(0f)
+    val y: State<Float> = _value1
 
     private val sensorManager by lazy {
         application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -95,14 +94,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
     }
-}
-
-@Composable
-fun HomeScreen(viewModel: MainViewModel) {
-    val x = viewModel.x.collectAsState()
-    val y = viewModel.y.collectAsState()
-
-    TiltScreen(x = x.value, y = y.value)
 }
 
 @Composable
