@@ -2,8 +2,8 @@ package com.example.todolist.data.room
 
 import android.app.Application
 import androidx.room.Room
-import com.example.todolist.data.Todo
-import com.example.todolist.data.TodoRepository
+import com.example.todolist.domain.model.Todo
+import com.example.todolist.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.Flow
 
 class RoomTodoRepository(application: Application) : TodoRepository {

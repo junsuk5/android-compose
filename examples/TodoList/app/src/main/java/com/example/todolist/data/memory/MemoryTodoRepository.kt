@@ -1,7 +1,7 @@
 package com.example.todolist.data.memory
 
-import com.example.todolist.data.Todo
-import com.example.todolist.data.TodoRepository
+import com.example.todolist.domain.model.Todo
+import com.example.todolist.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*

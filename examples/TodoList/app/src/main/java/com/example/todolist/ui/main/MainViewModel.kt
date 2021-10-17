@@ -1,12 +1,12 @@
-package com.example.todolist.ui
+package com.example.todolist.ui.main
 
 import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.todolist.data.Todo
-import com.example.todolist.data.TodoRepository
+import com.example.todolist.domain.repository.TodoRepository
+import com.example.todolist.domain.model.Todo
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 

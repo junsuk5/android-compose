@@ -1,12 +1,13 @@
-package com.example.todolist.ui
+package com.example.todolist
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.todolist.ui.main.MainViewModel
 import com.example.todolist.ui.main.HomeScreen
-import com.example.todolist.util.TodoAndroidViewModelFactory
+import com.example.todolist.domain.util.TodoAndroidViewModelFactory
 
 class MainActivity : ComponentActivity() {
 

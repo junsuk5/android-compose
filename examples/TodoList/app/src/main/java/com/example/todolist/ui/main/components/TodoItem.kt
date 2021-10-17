@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todolist.R
-import com.example.todolist.data.Todo
+import com.example.todolist.domain.model.Todo
 import java.text.SimpleDateFormat
 import java.util.*
 

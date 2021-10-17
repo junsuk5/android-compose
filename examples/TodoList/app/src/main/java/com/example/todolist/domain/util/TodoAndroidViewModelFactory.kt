@@ -1,11 +1,11 @@
-package com.example.todolist.util
+package com.example.todolist.domain.util
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.todolist.data.TodoRepository
 import com.example.todolist.data.room.RoomTodoRepository
-import com.example.todolist.ui.MainViewModel
+import com.example.todolist.domain.repository.TodoRepository
+import com.example.todolist.ui.main.MainViewModel
 
 class TodoAndroidViewModelFactory(
     private val application: Application,
