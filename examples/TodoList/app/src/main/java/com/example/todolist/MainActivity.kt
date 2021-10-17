@@ -3,11 +3,10 @@ package com.example.todolist
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.todolist.ui.main.MainViewModel
-import com.example.todolist.ui.main.HomeScreen
 import com.example.todolist.domain.util.TodoAndroidViewModelFactory
+import com.example.todolist.ui.main.HomeScreen
+import com.example.todolist.ui.main.MainViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -17,14 +16,8 @@ class MainActivity : ComponentActivity() {
             val mainViewModel: MainViewModel = viewModel(
                 factory = TodoAndroidViewModelFactory(application)
             )
-            val todoItems by mainViewModel.items
 
-            HomeScreen(
-                todoItems = todoItems,
-                onAddTodo = mainViewModel::addTodo,
-                onToggle = mainViewModel::toggle,
-                onDelete = mainViewModel::delete,
-            )
+            HomeScreen(viewModel = mainViewModel)
         }
     }
 }

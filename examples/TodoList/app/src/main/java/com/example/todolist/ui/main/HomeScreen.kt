@@ -7,29 +7,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todolist.R
-import com.example.todolist.domain.model.Todo
-import com.example.todolist.ui.theme.TodoListTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    todoItems: List<Todo>,
-    onAddTodo: (text: String) -> Unit = {},
-    onToggle: (index: Int) -> Unit = {},
-    onDelete: (index: Int) -> Unit = {},
+    viewModel: MainViewModel,
 ) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+
     val focusManager = LocalFocusManager.current
 
     // 다음을 임포트하면 델리게이티드 프로퍼티(by)를 사용할 수 있음
@@ -39,6 +34,7 @@ fun HomeScreen(
     var text by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 title = { Text("오늘 할 일") }
@@ -68,7 +64,7 @@ fun HomeScreen(
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),  // 키보드 옵션
                     keyboardActions = KeyboardActions(onDone = {
-                        onAddTodo(text)
+                        viewModel.addTodo(text)
                         text = ""
                         focusManager.clearFocus()   // 키보드 숨기기
                     }),
@@ -81,15 +77,25 @@ fun HomeScreen(
                 contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),   // 상하 좌우 패딩
                 verticalArrangement = Arrangement.spacedBy(16.dp),  // 아이템간의 패딩
             ) {
-                items(todoItems) { todoItem ->
+                items(viewModel.items.value) { todoItem ->
                     Column {
                         TodoItem(
                             todo = todoItem,
                             onClick = { index ->
-                                onToggle(index)
+                                viewModel.toggle(index)
                             },
                             onDeleteClick = { index ->
-                                onDelete(index)
+                                viewModel.delete(index)
+                                scope.launch {
+                                    val result = scaffoldState.snackbarHostState.showSnackbar(
+                                        message = "할 일 삭제됨",
+                                        actionLabel = "취소",
+                                    )
+
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.restoreTodo()
+                                    }
+                                }
                             },
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -99,19 +105,5 @@ fun HomeScreen(
             }
 
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    val items = listOf(
-        Todo("청소", isDone = true),
-        Todo("빨래", isDone = false),
-        Todo("숙제", isDone = true),
-    )
-
-    TodoListTheme {
-        HomeScreen(items)
     }
 }

@@ -16,10 +16,12 @@ class MemoryTodoRepository : TodoRepository {
         return _items
     }
 
-    override suspend fun addTodo(text: String) {
+    override suspend fun addTodo(todo: Todo) {
         _items.value = _items.value.toMutableList().apply {
             add(
-                Todo(text, Date().time).apply {
+                todo.copy(
+                    date = Date().time,
+                ).apply {
                     uid = _count.getAndIncrement()
                 }
             )

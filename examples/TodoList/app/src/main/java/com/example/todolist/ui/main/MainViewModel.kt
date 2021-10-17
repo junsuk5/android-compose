@@ -5,8 +5,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.todolist.domain.repository.TodoRepository
 import com.example.todolist.domain.model.Todo
+import com.example.todolist.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -17,6 +17,8 @@ class MainViewModel(
 
     private val _items = mutableStateOf(emptyList<Todo>())
     val items: State<List<Todo>> = _items
+
+    private var recentlyDeleteTodo: Todo? = null
 
     init {
         viewModelScope.launch {
@@ -29,7 +31,7 @@ class MainViewModel(
 
     fun addTodo(text: String) {
         viewModelScope.launch {
-            todoRepository.addTodo(text)
+            todoRepository.addTodo(Todo(title = text))
         }
     }
 
@@ -49,7 +51,15 @@ class MainViewModel(
         todo?.let {
             viewModelScope.launch {
                 todoRepository.deleteTodo(it)
+                recentlyDeleteTodo = it
             }
+        }
+    }
+
+    fun restoreTodo() {
+        viewModelScope.launch {
+            todoRepository.addTodo(recentlyDeleteTodo ?: return@launch)
+            recentlyDeleteTodo = null
         }
     }
 }

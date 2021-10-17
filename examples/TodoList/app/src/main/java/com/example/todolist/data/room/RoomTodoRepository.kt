@@ -17,8 +17,8 @@ class RoomTodoRepository(application: Application) : TodoRepository {
         return db.todoDao().todos()
     }
 
-    override suspend fun addTodo(text: String) {
-        return db.todoDao().insert(Todo(title = text))
+    override suspend fun addTodo(todo: Todo) {
+        return db.todoDao().insert(todo)
     }
 
     override suspend fun updateTodo(todo: Todo) {
