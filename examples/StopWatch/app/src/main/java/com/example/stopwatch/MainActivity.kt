@@ -15,12 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.stopwatch.ui.theme.StopWatchTheme
 import java.util.*
 import kotlin.concurrent.timer
 
@@ -36,20 +34,21 @@ class MainActivity : ComponentActivity() {
             val isRunning = viewModel.isRunning.value
             val lapTimes = viewModel.lapTimes.value
 
-            StopWatchTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(
-                        sec = sec,
-                        milli = milli,
-                        isRunning = isRunning,
-                        lapTimes = lapTimes,
-                        onReset = { viewModel.reset() },
-                        onToggle = { viewModel.toggle() },
-                        onLapTime = { viewModel.recordLapTime() },
-                    )
-                }
-            }
+            MainScreen(
+                sec = sec,
+                milli = milli,
+                isRunning = isRunning,
+                lapTimes = lapTimes,
+                onReset = { viewModel.reset() },
+                onToggle = { running ->
+                    if (running) {
+                        viewModel.pause()
+                    } else {
+                        viewModel.start()
+                    }
+                },
+                onLapTime = { viewModel.recordLapTime() },
+            )
         }
     }
 }
@@ -67,83 +66,65 @@ class MainViewModel : ViewModel() {
     private val _milli = mutableStateOf(0)
     val milli: State<Int> = _milli
 
-    private var lap = 1
-
     private val _lapTimes = mutableStateOf(mutableListOf<String>())
     val lapTimes: State<List<String>> = _lapTimes
 
-    fun toggle() {
-        if (_isRunning.value) {
-            pause()
-        } else {
-            start()
-        }
-    }
+    private var lap = 1
 
-    private fun start() {
+    fun start() {
         _isRunning.value = true
 
         timerTask = timer(period = 10) {
             time++
-            print(time)
             _sec.value = time / 100
             _milli.value = time % 100
         }
     }
 
-    private fun pause() {
+    fun pause() {
         _isRunning.value = false
         timerTask?.cancel()
+    }
+
+    fun reset() {
+        timerTask?.cancel()
+
+        time = 0
+        _isRunning.value = false
+        _sec.value = 0
+        _milli.value = 0
+
+        _lapTimes.value.clear()
+        lap = 1
     }
 
     fun recordLapTime() {
         _lapTimes.value.add(0, "$lap LAP : ${sec.value}.${milli.value}")
         lap++
     }
-
-    fun reset() {
-        timerTask?.cancel()
-
-        // 모든 변수 초기화
-        time = 0
-        _isRunning.value = false
-        _sec.value = 0
-        _milli.value = 0
-
-        // 모든 랩타임 제거
-        _lapTimes.value.clear()
-        lap = 1
-    }
 }
 
 @Composable
 fun MainScreen(
-    sec: Int = 0, milli: Int = 0, isRunning: Boolean = false,
-    lapTimes: List<String> = listOf(
-        "3 LAP: 2.55",
-        "2 LAP: 1.55",
-        "1 LAP: 0.55",
-    ),
-    onReset: () -> Unit = {},
-    onToggle: () -> Unit = {},
-    onLapTime: () -> Unit = {},
+    sec: Int,
+    milli: Int,
+    isRunning: Boolean,
+    lapTimes: List<String>,
+    onReset: () -> Unit,
+    onToggle: (Boolean) -> Unit,
+    onLapTime: () -> Unit,
 ) {
-
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("StopWatch") }
-            )
+            TopAppBar(title = { Text("StopWatch") })
         }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // 여백
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 초, 밀리초
             Row(
                 verticalAlignment = Alignment.Bottom,
             ) {
@@ -151,10 +132,8 @@ fun MainScreen(
                 Text("$milli")
             }
 
-            // 여백
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 랩 타임
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -165,7 +144,6 @@ fun MainScreen(
                 }
             }
 
-            // 하단 레이아웃
             Row(
                 modifier = Modifier
                     .padding(8.dp)
@@ -173,20 +151,18 @@ fun MainScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // 재시작 버튼
                 FloatingActionButton(
                     onClick = { onReset() },
                     backgroundColor = Color.Red,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_baseline_refresh_24),
-                        contentDescription = null,
+                        contentDescription = "reset"
                     )
                 }
 
-                // 일시 정지 버튼
                 FloatingActionButton(
-                    onClick = { onToggle() },
+                    onClick = { onToggle(isRunning) },
                     backgroundColor = Color.Green,
                 ) {
                     Image(
@@ -195,7 +171,7 @@ fun MainScreen(
                             if (isRunning) R.drawable.ic_baseline_pause_24
                             else R.drawable.ic_baseline_play_arrow_24
                         ),
-                        contentDescription = null,
+                        contentDescription = "start/pause"
                     )
                 }
 
@@ -204,13 +180,5 @@ fun MainScreen(
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    StopWatchTheme {
-        MainScreen()
     }
 }

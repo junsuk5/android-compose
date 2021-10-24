@@ -1,6 +1,7 @@
 package com.example.xylophone
 
 import android.app.Application
+import android.content.pm.ActivityInfo
 import android.media.SoundPool
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,11 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
-import com.example.xylophone.ui.theme.XylophoneTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
@@ -27,10 +26,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         super.onCreate(savedInstanceState)
+
         setContent {
-            XylophoneScreen { index ->
-                viewModel.playSound(index)
-            }
+            XylophoneScreen(viewModel = viewModel)
         }
     }
 }
@@ -60,7 +58,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 @Composable
 fun XylophoneScreen(
-    onClick: (Int) -> Unit,
+    viewModel: MainViewModel,
 ) {
     val keys = listOf(
         Pair("도", Color.Red),
@@ -78,22 +76,26 @@ fun XylophoneScreen(
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         keys.forEachIndexed { index, key ->
-            val padding = (index + 2) * 8   // 16, 24, 32, ...
+            val padding = (index + 2) * 8   // 16, 24, 32
             Keyboard(
                 modifier = Modifier
                     .padding(top = padding.dp, bottom = padding.dp)
                     .clickable {
-                        onClick(index)
+                        viewModel.playSound(index)
                     },
                 text = key.first,
-                color = key.second
+                color = key.second,
             )
         }
     }
 }
 
 @Composable
-fun Keyboard(modifier: Modifier = Modifier, text: String, color: Color) {
+fun Keyboard(
+    modifier: Modifier,
+    text: String,
+    color: Color,
+) {
     Box(
         modifier = modifier
             .width(50.dp)
@@ -101,17 +103,9 @@ fun Keyboard(modifier: Modifier = Modifier, text: String, color: Color) {
             .background(color = color)
     ) {
         Text(
-            text,
+            text = text,
             style = TextStyle(color = Color.White, fontSize = 20.sp),
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    XylophoneTheme {
-//        MainScreen()
     }
 }

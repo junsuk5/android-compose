@@ -1,19 +1,22 @@
 package com.example.mywebbrowser
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 class MainViewModel : ViewModel() {
-    private val _url = MutableStateFlow("https://www.google.com")
-    val url: StateFlow<String> = _url
+    private val _url = mutableStateOf("https://www.google.com")
+    val url: State<String> = _url
 
     // Undo, Redo를 위한 스택
     private val _undoStack = Stack<String>()
     private val _redoStack = Stack<String>()
 
-    fun onUrlChange(newUrl: String) {
+    val undoable = _undoStack.isNotEmpty()
+    val redoable = _redoStack.isNotEmpty()
+
+    fun urlChange(newUrl: String) {
         _undoStack.push(_url.value)
         _url.value = newUrl
     }
