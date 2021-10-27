@@ -1,4 +1,4 @@
-package com.example.todolist.data.memory
+package com.example.todolist.data.repository
 
 import com.example.todolist.domain.model.Todo
 import com.example.todolist.domain.repository.TodoRepository
