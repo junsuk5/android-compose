@@ -153,7 +153,7 @@ data class MapState(
 fun MyMap(
     viewModel: MainViewModel,
 ) {
-    val map = rememberMapViewWithLifecycle()
+    val map = rememberMapView()
     val state = viewModel.state.value
 
     AndroidView(
@@ -177,30 +177,13 @@ fun MyMap(
 }
 
 @Composable
-fun rememberMapViewWithLifecycle(): MapView {
+fun rememberMapView(): MapView {
     val context = LocalContext.current
-    val mapView = remember {
-        MapView(context).apply {
-            id = R.id.map
-        }
-    }
+    val mapView = remember { MapView(context) }
 
-    val lifecycleObserver = rememberMapLifecycleObserver(mapView = mapView)
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
-        lifecycle.addObserver(lifecycleObserver)
-        onDispose {
-            lifecycle.removeObserver(lifecycleObserver)
-        }
-    }
-
-    return mapView
-}
-
-@Composable
-fun rememberMapLifecycleObserver(mapView: MapView): LifecycleObserver =
-    remember(mapView) {
-        LifecycleEventObserver { _, event ->
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
                 Lifecycle.Event.ON_START -> mapView.onStart()
@@ -211,4 +194,13 @@ fun rememberMapLifecycleObserver(mapView: MapView): LifecycleObserver =
                 else -> throw IllegalStateException()
             }
         }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
+
+    return mapView
+}
