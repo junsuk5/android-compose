@@ -12,9 +12,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -41,8 +45,7 @@ fun HomeScreen(viewModel: MainViewModel) {
     val focusManager = LocalFocusManager.current
 
     val (inputUrl, setUrl) = rememberSaveable { mutableStateOf("https://www.google.com") }
-
-    var url by remember { mutableStateOf("https://www.google.com") }
+    val scaffoldState = rememberScaffoldState()
 
     Scaffold(
         topBar = {
@@ -55,6 +58,7 @@ fun HomeScreen(viewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "back",
+                            tint = Color.White,
                         )
                     }
                     IconButton(onClick = {
@@ -63,11 +67,13 @@ fun HomeScreen(viewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Filled.ArrowForward,
                             contentDescription = "forward",
+                            tint = Color.White,
                         )
                     }
                 }
             )
-        }
+        },
+        scaffoldState = scaffoldState,
     ) {
         Column(
             modifier = Modifier
@@ -83,14 +89,16 @@ fun HomeScreen(viewModel: MainViewModel) {
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),    // 검색아이콘
                 keyboardActions = KeyboardActions(onSearch = {  // 검색 아이콘을 클릭했을 때
                     viewModel.url.value = inputUrl
-                    url = inputUrl
                     focusManager.clearFocus()   // 키보드 숨기기
                 })
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            MyWebView(viewModel = viewModel)
+            MyWebView(
+                viewModel = viewModel,
+                scaffoldState = scaffoldState,
+            )
         }
     }
 
@@ -98,8 +106,8 @@ fun HomeScreen(viewModel: MainViewModel) {
 
 @Composable
 fun MyWebView(
-    modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    scaffoldState: ScaffoldState,
 ) {
     val scope = rememberCoroutineScope()
     val webView = rememberWebView()
@@ -108,22 +116,26 @@ fun MyWebView(
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { webView },
-        update = { webView ->
+        update = { view ->
             // url이 변경될 때 마다 호출됨
-            webView.loadUrl(viewModel.url.value)
+            view.loadUrl(viewModel.url.value)
 
             scope.launch {
-                viewModel.undoSharedFlow.collectLatest { goBack ->
-                    if (goBack && webView.canGoBack()) {
-                        webView.goBack()
+                viewModel.undoSharedFlow.collectLatest {
+                    if (view.canGoBack()) {
+                        view.goBack()
+                    } else {
+                        scaffoldState.snackbarHostState.showSnackbar("더 이상 뒤로 갈 수 없음")
                     }
                 }
             }
 
             scope.launch {
-                viewModel.redoSharedFlow.collectLatest { goForward ->
-                    if (goForward && webView.canGoForward()) {
-                        webView.goForward()
+                viewModel.redoSharedFlow.collectLatest {
+                    if (view.canGoForward()) {
+                        view.goForward()
+                    } else {
+                        scaffoldState.snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
                     }
                 }
             }
