@@ -13,9 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,15 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             val viewModel = viewModel<MainViewModel>()
-
             HomeScreen(viewModel = viewModel)
         }
     }
@@ -42,9 +41,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(viewModel: MainViewModel) {
-    val focusManager = LocalFocusManager.current
+    val focusMagager = LocalFocusManager.current
 
-    val (inputUrl, setUrl) = rememberSaveable { mutableStateOf("https://www.google.com") }
+    val (inputUrl, setUrl) = rememberSaveable {
+        mutableStateOf("https://www.google.com")
+    }
     val scaffoldState = rememberScaffoldState()
 
     Scaffold(
@@ -56,7 +57,7 @@ fun HomeScreen(viewModel: MainViewModel) {
                         viewModel.undo()
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "back",
                             tint = Color.White,
                         )
@@ -65,7 +66,7 @@ fun HomeScreen(viewModel: MainViewModel) {
                         viewModel.redo()
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowForward,
+                            imageVector = Icons.Default.ArrowForward,
                             contentDescription = "forward",
                             tint = Color.White,
                         )
@@ -80,16 +81,15 @@ fun HomeScreen(viewModel: MainViewModel) {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            // Url 입력 창
             OutlinedTextField(
                 value = inputUrl,
                 onValueChange = setUrl,
-                label = { Text("http://") },
+                label = { Text("https://") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),    // 검색아이콘
-                keyboardActions = KeyboardActions(onSearch = {  // 검색 아이콘을 클릭했을 때
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = {
                     viewModel.url.value = inputUrl
-                    focusManager.clearFocus()   // 키보드 숨기기
+                    focusMagager.clearFocus()
                 })
             )
 
@@ -101,7 +101,6 @@ fun HomeScreen(viewModel: MainViewModel) {
             )
         }
     }
-
 }
 
 @Composable
@@ -109,36 +108,33 @@ fun MyWebView(
     viewModel: MainViewModel,
     scaffoldState: ScaffoldState,
 ) {
-    val scope = rememberCoroutineScope()
     val webView = rememberWebView()
 
-    // 웹뷰 코드를 여기에서 실행함
+    LaunchedEffect(Unit) {
+        viewModel.undoSharedFlow.collectLatest {
+            if (webView.canGoBack()) {
+                webView.goBack()
+            } else {
+                scaffoldState.snackbarHostState.showSnackbar("더 이상 뒤로 갈 수 없음")
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.redoSharedFlow.collectLatest {
+            if (webView.canGoForward()) {
+                webView.goForward()
+            } else {
+                scaffoldState.snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
+            }
+        }
+    }
+
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { webView },
-        update = { view ->
-            // url이 변경될 때 마다 호출됨
-            view.loadUrl(viewModel.url.value)
-
-            scope.launch {
-                viewModel.undoSharedFlow.collectLatest {
-                    if (view.canGoBack()) {
-                        view.goBack()
-                    } else {
-                        scaffoldState.snackbarHostState.showSnackbar("더 이상 뒤로 갈 수 없음")
-                    }
-                }
-            }
-
-            scope.launch {
-                viewModel.redoSharedFlow.collectLatest {
-                    if (view.canGoForward()) {
-                        view.goForward()
-                    } else {
-                        scaffoldState.snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
-                    }
-                }
-            }
+        update = { webView ->
+            webView.loadUrl(viewModel.url.value)
         }
     )
 }
@@ -150,8 +146,8 @@ fun rememberWebView(): WebView {
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
+            loadUrl("https://google.com")
         }
     }
-
     return webView
 }
