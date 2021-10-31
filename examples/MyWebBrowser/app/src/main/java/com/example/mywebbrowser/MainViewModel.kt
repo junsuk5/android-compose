@@ -1,37 +1,30 @@
 package com.example.mywebbrowser
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import java.util.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
-    private val _url = mutableStateOf("https://www.google.com")
-    val url: State<String> = _url
+    val url = mutableStateOf("https://www.google.com")
 
-    // Undo, Redo를 위한 스택
-    private val _undoStack = Stack<String>()
-    private val _redoStack = Stack<String>()
+    private val _undoSharedFlow = MutableSharedFlow<Boolean>()
+    val undoSharedFlow = _undoSharedFlow.asSharedFlow()
 
-    val undoable = _undoStack.isNotEmpty()
-    val redoable = _redoStack.isNotEmpty()
-
-    fun urlChange(newUrl: String) {
-        _undoStack.push(_url.value)
-        _url.value = newUrl
-    }
+    private val _redoSharedFlow = MutableSharedFlow<Boolean>()
+    val redoSharedFlow = _redoSharedFlow.asSharedFlow()
 
     fun undo() {
-        if (_undoStack.isNotEmpty()) {
-            _redoStack.push(_url.value)
-            _url.value = _undoStack.pop()
+        viewModelScope.launch {
+            _undoSharedFlow.emit(true)
         }
     }
 
     fun redo() {
-        if (_redoStack.isNotEmpty()) {
-            _undoStack.push(_url.value)
-            _url.value = _redoStack.pop()
+        viewModelScope.launch {
+            _redoSharedFlow.emit(true)
         }
     }
 }
