@@ -25,10 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import com.example.tiltsensor.ui.theme.TiltSensorTheme
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +51,7 @@ class MainActivity : ComponentActivity() {
 }
 
 class MainViewModel(application: Application) : AndroidViewModel(application),
-    SensorEventListener, LifecycleObserver {
+    SensorEventListener, LifecycleEventObserver {
 
     private val _value0 = mutableStateOf(0f)
     val x: State<Float> = _value0
@@ -66,7 +63,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun registerSensor() {
         sensorManager.registerListener(
             this,
@@ -75,8 +71,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         )
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun unregisterSensor() {
+    private fun unregisterSensor() {
         sensorManager.unregisterListener(this)
     }
 
@@ -93,6 +88,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        if (event == Lifecycle.Event.ON_RESUME) {
+            registerSensor()
+        } else if (event == Lifecycle.Event.ON_PAUSE) {
+            unregisterSensor()
+        }
     }
 }
 
