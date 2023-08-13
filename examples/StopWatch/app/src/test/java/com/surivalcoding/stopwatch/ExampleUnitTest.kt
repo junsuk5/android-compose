@@ -1,4 +1,4 @@
-package com.example.stopwatch
+package com.surivalcoding.stopwatch
 
 import org.junit.Test
 
