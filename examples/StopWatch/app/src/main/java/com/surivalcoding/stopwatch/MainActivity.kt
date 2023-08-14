@@ -1,4 +1,4 @@
-package com.example.stopwatch
+package com.surivalcoding.stopwatch
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,6 +8,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -104,6 +110,7 @@ class MainViewModel : ViewModel() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     sec: Int,
@@ -120,7 +127,7 @@ fun MainScreen(
         }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.padding(it).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(40.dp))
@@ -129,7 +136,7 @@ fun MainScreen(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text("$sec", fontSize = 100.sp)
-                Text("$milli")
+                Text("$milli".padStart(2, '0'))     // 앞에 0 채우기
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -153,23 +160,23 @@ fun MainScreen(
             ) {
                 FloatingActionButton(
                     onClick = { onReset() },
-                    backgroundColor = Color.Red,
+                    containerColor = Color.Red,
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_baseline_refresh_24),
+                        painter = painterResource(id = R.drawable.baseline_refresh_24),
                         contentDescription = "reset"
                     )
                 }
 
                 FloatingActionButton(
                     onClick = { onToggle(isRunning) },
-                    backgroundColor = Color.Green,
+                    containerColor = Color.Green,
                 ) {
                     Image(
                         painter = painterResource(
                             id =
-                            if (isRunning) R.drawable.ic_baseline_pause_24
-                            else R.drawable.ic_baseline_play_arrow_24
+                            if (isRunning) R.drawable.baseline_pause_24
+                            else R.drawable.baseline_play_arrow_24
                         ),
                         contentDescription = "start/pause"
                     )
