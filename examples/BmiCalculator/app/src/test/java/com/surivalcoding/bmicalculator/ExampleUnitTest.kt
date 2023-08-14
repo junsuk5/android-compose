@@ -1,4 +1,4 @@
-package com.example.bmicalculator
+package com.surivalcoding.bmicalculator
 
 import org.junit.Test
 
