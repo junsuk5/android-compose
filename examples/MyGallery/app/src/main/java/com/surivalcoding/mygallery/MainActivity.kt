@@ -1,6 +1,5 @@
-package com.example.mygallery
+package com.surivalcoding.mygallery
 
-import android.Manifest
 import android.app.Application
 import android.content.ContentUris
 import android.content.pm.PackageManager
@@ -11,30 +10,44 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberImagePainter
-import com.google.accompanist.pager.*
+import coil.compose.AsyncImage
 import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
 
-    @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -47,21 +60,38 @@ class MainActivity : ComponentActivity() {
                     granted = isGranted
                 }
 
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                granted = true
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    granted = true
+                }
+            } else {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        android.Manifest.permission.READ_MEDIA_IMAGES,
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    granted = true
+                }
             }
 
             if (granted) {
                 viewModel.fetchPhotos()
                 HomeScreen(photoUris = viewModel.photoUris.value)
             } else {
-                PermissionRequestScreen {
-                    launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                    PermissionRequestScreen {
+                        launcher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    }
+                } else {
+                    PermissionRequestScreen {
+                        launcher.launch(android.Manifest.permission.READ_MEDIA_IMAGES)
+                    }
                 }
+
             }
         }
     }
@@ -113,7 +143,7 @@ fun PermissionRequestScreen(onClick: () -> Unit) {
     }
 }
 
-@ExperimentalPagerApi
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(photoUris: List<Uri>) {
     val pagerState = rememberPagerState()
@@ -121,7 +151,7 @@ fun HomeScreen(photoUris: List<Uri>) {
     Column(Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,
-            count = photoUris.size,
+            pageCount = photoUris.size,
             modifier = Modifier
                 .weight(1f)
                 .padding(16.dp)
@@ -130,7 +160,10 @@ fun HomeScreen(photoUris: List<Uri>) {
             Card(
                 modifier = Modifier
                     .graphicsLayer {
-                        val pageOffset = calculateCurrentOffsetForPage(pageIndex).absoluteValue
+                        val pageOffset = (
+                                (pagerState.currentPage - pageIndex) + pagerState
+                                    .currentPageOffsetFraction
+                                ).absoluteValue
 
                         lerp(
                             start = 0.85f,
@@ -148,10 +181,8 @@ fun HomeScreen(photoUris: List<Uri>) {
                         )
                     }
             ) {
-                Image(
-                    painter = rememberImagePainter(
-                        data = photoUris[pageIndex],
-                    ),
+                AsyncImage(
+                    model = photoUris[pageIndex],
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -159,12 +190,26 @@ fun HomeScreen(photoUris: List<Uri>) {
             }
         }
 
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp),
-        )
+        Row(
+            Modifier
+                .height(50.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(photoUris.size) { iteration ->
+                val color =
+                    if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(20.dp)
+
+                )
+            }
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-package com.example.mygallery
+package com.surivalcoding.mygallery
 
 import org.junit.Test
 
