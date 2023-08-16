@@ -1,4 +1,4 @@
-package com.example.mywebbrowser
+package com.surivalcoding.mywebbrowser
 
 import org.junit.Test
 

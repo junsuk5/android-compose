@@ -1,4 +1,4 @@
-package com.example.mywebbrowser
+package com.surivalcoding.mywebbrowser
 
 import android.os.Bundle
 import android.webkit.WebView
@@ -12,6 +12,15 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +48,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: MainViewModel) {
     val focusMagager = LocalFocusManager.current
@@ -46,7 +56,7 @@ fun HomeScreen(viewModel: MainViewModel) {
     val (inputUrl, setUrl) = rememberSaveable {
         mutableStateOf("https://www.google.com")
     }
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -59,7 +69,6 @@ fun HomeScreen(viewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "back",
-                            tint = Color.White,
                         )
                     }
                     IconButton(onClick = {
@@ -68,16 +77,16 @@ fun HomeScreen(viewModel: MainViewModel) {
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
                             contentDescription = "forward",
-                            tint = Color.White,
                         )
                     }
                 }
             )
         },
-        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
         Column(
             modifier = Modifier
+                .padding(it)
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
@@ -97,7 +106,7 @@ fun HomeScreen(viewModel: MainViewModel) {
 
             MyWebView(
                 viewModel = viewModel,
-                scaffoldState = scaffoldState,
+                snackbarHostState = snackbarHostState,
             )
         }
     }
@@ -106,7 +115,7 @@ fun HomeScreen(viewModel: MainViewModel) {
 @Composable
 fun MyWebView(
     viewModel: MainViewModel,
-    scaffoldState: ScaffoldState,
+    snackbarHostState: SnackbarHostState,
 ) {
     val webView = rememberWebView()
 
@@ -115,7 +124,7 @@ fun MyWebView(
             if (webView.canGoBack()) {
                 webView.goBack()
             } else {
-                scaffoldState.snackbarHostState.showSnackbar("더 이상 뒤로 갈 수 없음")
+                snackbarHostState.showSnackbar("더 이상 뒤로 갈 수 없음")
             }
         }
     }
@@ -125,7 +134,7 @@ fun MyWebView(
             if (webView.canGoForward()) {
                 webView.goForward()
             } else {
-                scaffoldState.snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
+                snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
             }
         }
     }

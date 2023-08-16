@@ -1,4 +1,4 @@
-package com.example.mywebbrowser
+package com.surivalcoding.mywebbrowser
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
