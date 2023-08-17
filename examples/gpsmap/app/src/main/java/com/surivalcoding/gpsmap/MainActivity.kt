@@ -1,4 +1,4 @@
-package com.survivalcoding.gpsmap
+package com.surivalcoding.gpsmap
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,8 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +30,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
@@ -79,9 +81,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class MainViewModel(application: Application) : AndroidViewModel(application), LifecycleObserver {
+class MainViewModel(application: Application) : AndroidViewModel(application), LifecycleObserver,
+    LifecycleEventObserver {
     private val fusedLocationProviderClient: FusedLocationProviderClient =
-        FusedLocationProviderClient(application.applicationContext)
+        LocationServices.getFusedLocationProviderClient(application)
     private val locationRequest: LocationRequest
     private val locationCallback: MyLocationCallBack
 
@@ -89,29 +92,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application), L
         mutableStateOf(MapState(null, PolylineOptions().width(5f).color(Color.RED)))
     val state: State<MapState> = _state
 
-//    private val _location = mutableStateOf<Location?>(null)
-//    val location: State<Location?> = _location
-//
-//    private val _polylineOptions = mutableStateOf(PolylineOptions().width(5f).color(Color.RED))
-//    val polylineOptions: State<PolylineOptions> = _polylineOptions
-
     init {
         locationCallback = MyLocationCallBack()
 
-        locationRequest = LocationRequest.create()
         // GPS 우선
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        // 업데이트 인터벌
-        // 위치 정보가 없을 때는 업데이트 안 함
-        // 상황에 따라 짧아질 수 있음, 정확하지 않음
-        // 다른 앱에서 짧은 인터벌로 위치 정보를 요청하면 짧아질 수 있음
-        locationRequest.interval = 10000
-        // 정확함. 이것보다 짧은 업데이트는 하지 않음
-        locationRequest.fastestInterval = 5000
+        locationRequest = LocationRequest.Builder(10000)
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .setMinUpdateIntervalMillis(5000)
+            .build()
     }
 
     @SuppressLint("MissingPermission")
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun addLocationListener() {
         Looper.myLooper()?.let { looper ->
             fusedLocationProviderClient.requestLocationUpdates(
@@ -122,7 +113,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application), L
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private fun removeLocationListener() {
         // 현재 위치 요청을 삭제 ②
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
@@ -138,8 +128,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application), L
 
             _state.value = state.value.copy(
                 location = location,
-                polylineOptions = polylineOptions.add(LatLng(location.latitude, location.longitude))
+                polylineOptions = polylineOptions.add(
+                    LatLng(
+                        location?.latitude ?: 0.0,
+                        location?.longitude ?: 0.0,
+                    )
+                )
             )
+        }
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        if (event == Lifecycle.Event.ON_RESUME) {
+            addLocationListener()
+        } else if (event == Lifecycle.Event.ON_PAUSE) {
+            removeLocationListener()
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.survivalcoding.gpsmap
+package com.surivalcoding.gpsmap
 
 import org.junit.Test
 
