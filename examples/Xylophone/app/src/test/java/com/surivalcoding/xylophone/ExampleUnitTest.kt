@@ -1,4 +1,4 @@
-package com.example.xylophone
+package com.surivalcoding.xylophone
 
 import org.junit.Test
 
