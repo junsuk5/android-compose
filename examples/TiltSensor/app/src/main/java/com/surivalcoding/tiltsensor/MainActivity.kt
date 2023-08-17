@@ -1,4 +1,4 @@
-package com.example.tiltsensor
+package com.surivalcoding.tiltsensor
 
 import android.app.Application
 import android.content.Context
@@ -15,8 +15,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.*
-import com.example.tiltsensor.ui.theme.TiltSensorTheme
+import com.surivalcoding.tiltsensor.ui.theme.TiltSensorTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
@@ -138,7 +138,7 @@ fun TiltScreen(x: Float, y: Float) {
 @Composable
 fun DefaultPreview() {
     TiltSensorTheme {
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             TiltScreen(1.5f, 1.2f)
         }
     }

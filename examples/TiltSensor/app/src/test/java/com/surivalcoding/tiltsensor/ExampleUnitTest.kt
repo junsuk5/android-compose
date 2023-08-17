@@ -1,4 +1,4 @@
-package com.example.tiltsensor
+package com.surivalcoding.tiltsensor
 
 import org.junit.Test
 
