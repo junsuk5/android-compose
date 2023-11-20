@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.surivalcoding.mywebbrowser"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.surivalcoding.mywebbrowser"
