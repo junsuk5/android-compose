@@ -3,7 +3,7 @@
     style="@style/Widget.Flashlight.AppWidget.Container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:theme="@style/Theme.Flashlight.AppWidgetContainer">
+    android:theme="@style/Theme.Flashlight">
 
     <TextView
         android:id="@+id/appwidget_text"

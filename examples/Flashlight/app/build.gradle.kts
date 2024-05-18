@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.surivalcoding.tiltsensor"
+    namespace = "com.example.flashlight"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.surivalcoding.tiltsensor"
+        applicationId = "com.example.flashlight"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -69,4 +69,7 @@ dependencies {
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // coil
+    implementation(libs.coil.compose)
 }
