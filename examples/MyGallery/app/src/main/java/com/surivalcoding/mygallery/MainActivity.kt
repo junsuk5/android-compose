@@ -146,12 +146,13 @@ fun PermissionRequestScreen(onClick: () -> Unit) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(photoUris: List<Uri>) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(
+        pageCount = { photoUris.size }
+    )
 
     Column(Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,
-            pageCount = photoUris.size,
             modifier = Modifier
                 .weight(1f)
                 .padding(16.dp)
